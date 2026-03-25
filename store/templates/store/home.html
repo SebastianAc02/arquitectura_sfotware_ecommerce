@@ -7,9 +7,9 @@
 <div class="hero bg-base-100 rounded-2xl mb-8 py-10 px-6 shadow-sm">
     <div class="hero-content text-center">
         <div>
-            <h1 class="text-4xl font-bold" style="color:#3b3028;">🐾 Bienvenido a Kibo</h1>
+            <h1 class="text-4xl font-bold" style="color:#3b3028;">Bienvenido a Kibo</h1>
             <p class="py-4 text-base-content/60 text-lg">Todo lo que tu mascota necesita, en un solo lugar.</p>
-            <a href="#productos" class="btn btn-warning font-semibold px-6">Ver productos</a>
+            <a href="{% url 'store:catalog' %}" class="btn btn-warning font-semibold px-6">Explorar catálogo</a>
         </div>
     </div>
 </div>
@@ -20,7 +20,7 @@
     <p class="text-xs font-semibold uppercase tracking-widest text-base-content/40 mb-3">Categorías</p>
     <div class="flex flex-wrap gap-2">
         {% for cat in categories %}
-        <a href="#" class="badge badge-lg badge-outline hover:badge-warning cursor-pointer transition-colors">
+        <a href="{% url 'store:catalog' %}?categoria={{ cat.slug }}" class="badge badge-lg badge-outline hover:badge-warning cursor-pointer transition-colors">
             {{ cat.name }}
         </a>
         {% endfor %}
@@ -42,7 +42,7 @@
             </figure>
             {% else %}
             <figure class="h-40 bg-base-200 flex items-center justify-content-center">
-                <span class="text-5xl">🐾</span>
+                <span class="text-sm text-base-content/60">Sin imagen</span>
             </figure>
             {% endif %}
             <div class="card-body p-4">
@@ -50,7 +50,7 @@
                 <p class="text-xs text-base-content/50">{{ product.category.name }}</p>
                 <div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-base" style="color:#3b3028;">${{ product.price }}</span>
-                    <a href="#" class="btn btn-xs btn-warning">Ver</a>
+                    <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-xs btn-warning">Ver</a>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
 
     {% else %}
     <div class="flex flex-col items-center py-20 text-base-content/30">
-        <span class="text-6xl mb-4">📦</span>
+        <span class="text-lg mb-2">Sin productos</span>
         <p class="text-lg font-medium">No hay productos aún</p>
         <p class="text-sm mt-1">Agrega productos desde el panel de administración.</p>
     </div>
