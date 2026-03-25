@@ -63,7 +63,7 @@ PRODUCTS = [
     # Higiene
     ('Arena Aglomerante Lavanda 10kg', 'Higiene', 'gato', 'todos', Decimal('55.00'), 27),
     ('Shampoo Hipoalergénico Canino', 'Higiene', 'perro', 'todos', Decimal('34.90'), 50),
-    ('Toallitas Húmedas Mascotas x80', 'Higiene', 'Higiene', 'todos', Decimal('21.00'), 66),
+    ('Toallitas Húmedas Mascotas x80', 'Higiene', 'todos', 'todos', Decimal('21.00'), 66),
     ('Removedor de Olores Enzimático', 'Higiene', 'todos', 'todos', Decimal('39.90'), 24),
 
     # Accesorios
@@ -95,7 +95,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE('🌱 Iniciando seed demo data...'))
+        self.stdout.write(self.style.NOTICE('Iniciando seed demo data...'))
 
         # 1) Usuarios demo
         admin_user, _ = User.objects.get_or_create(
@@ -237,7 +237,7 @@ class Command(BaseCommand):
             for p in picks:
                 Wishlist.objects.get_or_create(user=user, product=p)
 
-        self.stdout.write(self.style.SUCCESS('✅ Seed completado exitosamente.'))
+        self.stdout.write(self.style.SUCCESS('Seed completado exitosamente.'))
         self.stdout.write('Credenciales demo:')
         self.stdout.write('  Admin:   kibo_admin / kibo12345')
         self.stdout.write('  Cliente: cliente1..cliente5 / kibo12345')

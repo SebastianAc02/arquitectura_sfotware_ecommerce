@@ -1,6 +1,8 @@
 # Author: Equipo Kibo
 # Vistas del PANEL ADMIN custom
 
+import functools
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum
@@ -17,9 +19,11 @@ def _is_admin_user(user):
 
 
 def admin_required(view_func):
-    """Decorator simple para restringir acceso a usuarios con profile.is_admin=True."""
-
+    """Decorator para restringir acceso a usuarios con profile.is_admin=True.
+    functools.wraps preserva el nombre de la view para que los {% url %} funcionen.
+    """
     @login_required
+    @functools.wraps(view_func)
     def _wrapped(request, *args, **kwargs):
         if not _is_admin_user(request.user):
             return HttpResponseForbidden('No tienes permisos para acceder al panel administrativo.')
