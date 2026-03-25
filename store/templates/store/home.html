@@ -1,0 +1,41 @@
+{% extends 'base_public.html' %}
+
+{% block title %}Kibo — Inicio{% endblock %}
+
+{% block content %}
+<div style="text-align:center; padding: 48px 0 32px;">
+    <h1 style="font-size:36px; color:#3b3028;">🐾 Bienvenido a Kibo</h1>
+    <p style="color:#888; margin-top:8px;">Todo lo que tu mascota necesita, en un solo lugar.</p>
+</div>
+
+{% if categories %}
+<div style="margin-bottom:32px;">
+    <h2 style="margin-bottom:16px; font-size:18px;">Categorías</h2>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        {% for cat in categories %}
+        <span style="background:#fef3c7; color:#92400e; padding:6px 14px; border-radius:20px; font-size:13px;">
+            {{ cat.name }}
+        </span>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if products %}
+<h2 style="margin-bottom:16px; font-size:18px;">Productos destacados</h2>
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:20px;">
+    {% for product in products %}
+    <div style="background:white; border-radius:8px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+        <p style="font-weight:600;">{{ product.name }}</p>
+        <p style="color:#888; font-size:13px;">{{ product.category.name }}</p>
+        <p style="color:#3b3028; font-weight:700; margin-top:8px;">${{ product.price }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align:center; padding:48px; color:#aaa;">
+    <p style="font-size:18px;">No hay productos aún.</p>
+    <p style="font-size:13px; margin-top:8px;">Agrega productos desde el panel de administración.</p>
+</div>
+{% endif %}
+{% endblock %}

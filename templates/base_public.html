@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kibo — Pet Shop{% endblock %}</title>
+    {% load static %}
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; background: #fafafa; color: #333; }
+        nav { background: #3b3028; color: white; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+        nav a { color: white; text-decoration: none; margin-left: 16px; }
+        nav .brand { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+        main { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
+        footer { text-align: center; padding: 24px; color: #888; font-size: 13px; margin-top: 48px; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'store:home' %}" class="brand">🐾 KIBO</a>
+        <div>
+            <a href="{% url 'store:home' %}">Inicio</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}">Mi perfil</a>
+                <a href="{% url 'admin_panel:dashboard' %}">Panel</a>
+                <a href="{% url 'accounts:logout' %}">Cerrar sesión ({{ user.username }})</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">Iniciar sesión</a>
+                <a href="{% url 'accounts:register' %}">Registrarse</a>
+            {% endif %}
+        </div>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>Kibo Pet Shop &copy; 2026 — Arquitectura de Software SI3001</footer>
+</body>
+</html>

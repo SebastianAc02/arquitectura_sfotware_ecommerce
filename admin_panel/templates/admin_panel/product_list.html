@@ -1,0 +1,44 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Productos — Kibo Admin{% endblock %}
+{% block page_title %}Productos{% endblock %}
+
+{% block content %}
+<p style="margin-bottom:14px;">
+    <a class="btn" href="{% url 'admin_panel:product_create' %}">+ Nuevo producto</a>
+</p>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.category.name }}</td>
+                <td>${{ product.price }}</td>
+                <td>{{ product.stock }}</td>
+                <td>{% if product.is_active %}Sí{% else %}No{% endif %}</td>
+                <td>
+                    <a class="btn secondary" href="{% url 'admin_panel:product_edit' product.id %}">Editar</a>
+                    <a class="btn danger" href="{% url 'admin_panel:product_delete' product.id %}">Eliminar</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7">No hay productos creados.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

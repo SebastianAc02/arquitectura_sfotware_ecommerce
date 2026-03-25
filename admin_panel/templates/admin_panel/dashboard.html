@@ -1,0 +1,37 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Dashboard — Kibo Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid" style="margin-bottom:16px;">
+    <div class="card"><strong>Total productos</strong><p style="font-size:26px;">{{ total_products }}</p></div>
+    <div class="card"><strong>Productos activos</strong><p style="font-size:26px;">{{ active_products }}</p></div>
+    <div class="card"><strong>Total órdenes</strong><p style="font-size:26px;">{{ total_orders }}</p></div>
+    <div class="card"><strong>Órdenes pendientes</strong><p style="font-size:26px;">{{ pending_orders }}</p></div>
+    <div class="card"><strong>Ventas acumuladas</strong><p style="font-size:26px;">${{ total_sales }}</p></div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3 style="margin-bottom:8px;">Top productos vendidos</h3>
+        <ul>
+            {% for p in top_products %}
+                <li>{{ p.name }} — {{ p.sold_qty|default:0 }}</li>
+            {% empty %}
+                <li>Sin datos aún.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="card">
+        <h3 style="margin-bottom:8px;">Top productos comentados</h3>
+        <ul>
+            {% for p in top_commented %}
+                <li>{{ p.name }} — {{ p.review_count|default:0 }} reseñas</li>
+            {% empty %}
+                <li>Sin datos aún.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

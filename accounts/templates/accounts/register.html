@@ -1,0 +1,20 @@
+{% extends 'base_public.html' %}
+
+{% block title %}Registro — Kibo{% endblock %}
+
+{% block content %}
+<div style="max-width:520px;margin:0 auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);">
+    <h1 style="font-size:24px;margin-bottom:8px;">Crear cuenta</h1>
+    <p style="color:#666;margin-bottom:18px;">Regístrate para comprar y gestionar tu perfil.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" style="background:#3b3028;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;">Crear cuenta</button>
+    </form>
+
+    <p style="margin-top:16px;font-size:14px;">
+        ¿Ya tienes cuenta? <a href="{% url 'accounts:login' %}">Inicia sesión</a>
+    </p>
+</div>
+{% endblock %}

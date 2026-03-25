@@ -1,0 +1,17 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Eliminar producto — Kibo Admin{% endblock %}
+{% block page_title %}Confirmar eliminación{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:640px;">
+    <p>¿Seguro que quieres eliminar el producto <strong>{{ product.name }}</strong>?</p>
+    <p class="muted" style="margin:8px 0 16px;">Esta acción no se puede deshacer.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn danger" type="submit">Sí, eliminar</button>
+        <a class="btn secondary" href="{% url 'admin_panel:product_list' %}">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
