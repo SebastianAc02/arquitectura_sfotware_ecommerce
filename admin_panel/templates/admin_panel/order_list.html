@@ -1,41 +1,56 @@
 {% extends 'base_admin.html' %}
-
 {% block title %}Órdenes — Kibo Admin{% endblock %}
 {% block page_title %}Órdenes{% endblock %}
 
 {% block content %}
-<div class="card">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Usuario</th>
-                <th>Total</th>
-                <th>Estado</th>
-                <th>Fecha</th>
-                <th>Items</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>#{{ order.id }}</td>
-                <td>{{ order.user.username }}</td>
-                <td>${{ order.total }}</td>
-                <td>{{ order.get_status_display }}</td>
-                <td>{{ order.created_at|date:'Y-m-d H:i' }}</td>
-                <td>
-                    {% for item in order.items.all %}
-                        <div>{{ item.quantity }}x {{ item.product.name }}</div>
-                    {% empty %}
-                        <div>Sin items</div>
-                    {% endfor %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6">No hay órdenes registradas.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card bg-base-100 shadow-sm">
+    <div class="overflow-x-auto">
+        <table class="table table-sm">
+            <thead>
+                <tr class="text-xs uppercase text-base-content/40 tracking-wider">
+                    <th>Orden</th>
+                    <th>Usuario</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Productos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr class="hover">
+                    <td class="font-semibold text-sm">#{{ order.id }}</td>
+                    <td class="text-sm">{{ order.user.username }}</td>
+                    <td class="font-semibold text-sm">${{ order.total }}</td>
+                    <td>
+                        {% if order.status == 'pending' %}
+                            <span class="badge badge-warning badge-sm">{{ order.get_status_display }}</span>
+                        {% elif order.status == 'paid' %}
+                            <span class="badge badge-info badge-sm">{{ order.get_status_display }}</span>
+                        {% elif order.status == 'shipped' %}
+                            <span class="badge badge-primary badge-sm">{{ order.get_status_display }}</span>
+                        {% elif order.status == 'delivered' %}
+                            <span class="badge badge-success badge-sm">{{ order.get_status_display }}</span>
+                        {% elif order.status == 'cancelled' %}
+                            <span class="badge badge-error badge-sm">{{ order.get_status_display }}</span>
+                        {% else %}
+                            <span class="badge badge-ghost badge-sm">{{ order.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-xs text-base-content/50">{{ order.created_at|date:'d/m/Y H:i' }}</td>
+                    <td class="text-xs text-base-content/70">
+                        {% for item in order.items.all %}
+                            <div>{{ item.quantity }}× {{ item.product.name }}</div>
+                        {% empty %}
+                            <span class="text-base-content/30">Sin items</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-base-content/30 py-8">No hay órdenes registradas.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

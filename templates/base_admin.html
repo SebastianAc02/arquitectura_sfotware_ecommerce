@@ -1,60 +1,126 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="autumn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Kibo Admin{% endblock %}</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: system-ui, sans-serif; background:#f5f7fb; color:#1f2937; }
-        .layout { display:grid; grid-template-columns:260px 1fr; min-height:100vh; }
-        aside { background:#111827; color:#fff; padding:22px 16px; }
-        aside h1 { font-size:20px; margin-bottom:20px; }
-        aside a { color:#d1d5db; display:block; padding:10px 12px; border-radius:8px; text-decoration:none; margin-bottom:8px; }
-        aside a:hover { background:#1f2937; color:#fff; }
-        main { padding:24px; }
-        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .card { background:#fff; border-radius:12px; padding:16px; box-shadow:0 1px 6px rgba(0,0,0,.08); }
-        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
-        table { width:100%; border-collapse:collapse; }
-        th, td { text-align:left; padding:10px; border-bottom:1px solid #e5e7eb; }
-        .btn { display:inline-block; background:#111827; color:#fff; padding:8px 12px; border-radius:8px; text-decoration:none; border:none; cursor:pointer; }
-        .btn.secondary { background:#6b7280; }
-        .btn.danger { background:#b91c1c; }
-        .muted { color:#6b7280; font-size:13px; }
-        form p { margin-bottom:10px; }
-        input, select, textarea { width:100%; padding:9px; border:1px solid #d1d5db; border-radius:8px; }
-        .messages { margin-bottom:14px; }
-        .messages li { list-style:none; background:#ecfeff; border:1px solid #a5f3fc; padding:10px; border-radius:8px; margin-bottom:8px; }
-    </style>
+    <!-- DaisyUI v4 -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet" type="text/css">
+    <!-- Tailwind v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
-<div class="layout">
-    <aside>
-        <h1>🐾 Kibo Admin</h1>
-        <a href="{% url 'admin_panel:dashboard' %}">Dashboard</a>
-        <a href="{% url 'admin_panel:product_list' %}">Productos</a>
-        <a href="{% url 'admin_panel:order_list' %}">Órdenes</a>
-        <a href="{% url 'store:home' %}">Tienda pública</a>
-        <a href="{% url 'accounts:profile' %}">Mi perfil</a>
-        <a href="{% url 'accounts:logout' %}">Cerrar sesión</a>
-    </aside>
-    <main>
-        <div class="topbar">
-            <h2>{% block page_title %}Panel{% endblock %}</h2>
-            <p class="muted">Usuario: {{ request.user.username }}</p>
+<body class="bg-base-200">
+
+<div class="drawer lg:drawer-open">
+    <input id="admin-drawer" type="checkbox" class="drawer-toggle">
+
+    <!-- Page content -->
+    <div class="drawer-content flex flex-col min-h-screen">
+
+        <!-- Top bar (mobile) -->
+        <div class="navbar bg-base-100 border-b border-base-300 lg:hidden">
+            <label for="admin-drawer" class="btn btn-ghost drawer-button">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </label>
+            <span class="font-bold text-lg">🐾 Kibo Admin</span>
         </div>
 
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
+        <!-- Page header -->
+        <div class="bg-base-100 border-b border-base-300 px-6 py-4 flex justify-between items-center">
+            <h1 class="text-lg font-bold text-base-content">{% block page_title %}Panel{% endblock %}</h1>
+            <span class="text-sm text-base-content/50">{{ request.user.username }}</span>
+        </div>
 
-        {% block content %}{% endblock %}
-    </main>
+        <!-- Body -->
+        <main class="flex-1 p-6">
+            {% if messages %}
+                {% for message in messages %}
+                <div role="alert" class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} mb-4">
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="drawer-side z-40">
+        <label for="admin-drawer" class="drawer-overlay"></label>
+        <aside class="w-60 min-h-screen flex flex-col" style="background:#111827;">
+
+            <!-- Brand -->
+            <div class="p-5 border-b border-white/10">
+                <a href="{% url 'admin_panel:dashboard' %}" class="text-white font-bold text-lg tracking-wide">
+                    🐾 Kibo Admin
+                </a>
+            </div>
+
+            <!-- Nav links -->
+            <ul class="menu flex-1 p-3 gap-1">
+                <li>
+                    <a href="{% url 'admin_panel:dashboard' %}" class="text-white/70 hover:text-white hover:bg-white/10 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_panel:product_list' %}" class="text-white/70 hover:text-white hover:bg-white/10 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                        Productos
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_panel:order_list' %}" class="text-white/70 hover:text-white hover:bg-white/10 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Órdenes
+                    </a>
+                </li>
+                <div class="divider my-1 opacity-20"></div>
+                <li>
+                    <a href="{% url 'store:home' %}" class="text-white/70 hover:text-white hover:bg-white/10 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Ver tienda
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'accounts:profile' %}" class="text-white/70 hover:text-white hover:bg-white/10 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        Mi perfil
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'accounts:logout' %}" class="text-red-400 hover:text-red-300 hover:bg-white/10 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Cerrar sesión
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-white/10">
+                <p class="text-white/30 text-xs">Kibo Admin v1.0</p>
+            </div>
+        </aside>
+    </div>
 </div>
+
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>

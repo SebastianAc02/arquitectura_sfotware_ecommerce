@@ -1,20 +1,47 @@
 {% extends 'base_public.html' %}
-
 {% block title %}Iniciar sesión — Kibo{% endblock %}
 
 {% block content %}
-<div style="max-width:460px;margin:0 auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);">
-    <h1 style="font-size:24px;margin-bottom:8px;">Iniciar sesión</h1>
-    <p style="color:#666;margin-bottom:18px;">Accede a tu cuenta de Kibo.</p>
+<div class="flex justify-center">
+    <div class="card bg-base-100 shadow-md w-full max-w-md">
+        <div class="card-body p-8">
+            <h2 class="card-title text-2xl font-bold mb-1" style="color:#3b3028;">Iniciar sesión</h2>
+            <p class="text-base-content/50 text-sm mb-6">Accede a tu cuenta de Kibo.</p>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" style="background:#3b3028;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;">Entrar</button>
-    </form>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                <fieldset class="fieldset mb-4">
+                    <legend class="fieldset-legend text-sm font-semibold">{{ field.label }}</legend>
+                    <input
+                        type="{{ field.field.widget.input_type }}"
+                        name="{{ field.html_name }}"
+                        id="{{ field.id_for_label }}"
+                        class="input input-bordered w-full {% if field.errors %}input-error{% endif %}"
+                        {% if field.value %}value="{{ field.value }}"{% endif %}
+                    >
+                    {% for error in field.errors %}
+                    <p class="text-error text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+                </fieldset>
+                {% endfor %}
 
-    <p style="margin-top:16px;font-size:14px;">
-        ¿No tienes cuenta? <a href="{% url 'accounts:register' %}">Regístrate aquí</a>
-    </p>
+                {% if form.non_field_errors %}
+                <div role="alert" class="alert alert-error mb-4">
+                    {% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn w-full mt-2 font-semibold" style="background:#3b3028; color:white;">
+                    Entrar
+                </button>
+            </form>
+
+            <p class="text-center text-sm text-base-content/50 mt-4">
+                ¿No tienes cuenta?
+                <a href="{% url 'accounts:register' %}" class="font-semibold" style="color:#3b3028;">Regístrate aquí</a>
+            </p>
+        </div>
+    </div>
 </div>
 {% endblock %}

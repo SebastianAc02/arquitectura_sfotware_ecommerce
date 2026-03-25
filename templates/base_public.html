@@ -1,38 +1,91 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="autumn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Kibo — Pet Shop{% endblock %}</title>
     {% load static %}
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: system-ui, sans-serif; background: #fafafa; color: #333; }
-        nav { background: #3b3028; color: white; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
-        nav a { color: white; text-decoration: none; margin-left: 16px; }
-        nav .brand { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
-        main { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
-        footer { text-align: center; padding: 24px; color: #888; font-size: 13px; margin-top: 48px; border-top: 1px solid #eee; }
-    </style>
+    <!-- DaisyUI v4 -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet" type="text/css">
+    <!-- Tailwind v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
-    <nav>
-        <a href="{% url 'store:home' %}" class="brand">🐾 KIBO</a>
-        <div>
-            <a href="{% url 'store:home' %}">Inicio</a>
+<body class="bg-base-200 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <div class="navbar shadow-sm" style="background:#3b3028;">
+        <div class="navbar-start">
+            <!-- Mobile hamburger -->
+            <div class="dropdown">
+                <label tabindex="0" class="btn btn-ghost lg:hidden text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </label>
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-50 p-2 shadow bg-base-100 rounded-box w-52">
+                    <li><a href="{% url 'store:home' %}">Inicio</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'accounts:profile' %}">Mi perfil</a></li>
+                        {% if user.profile.is_admin %}
+                        <li><a href="{% url 'admin_panel:dashboard' %}">Panel admin</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'accounts:logout' %}">Cerrar sesión</a></li>
+                    {% else %}
+                        <li><a href="{% url 'accounts:login' %}">Iniciar sesión</a></li>
+                        <li><a href="{% url 'accounts:register' %}">Registrarse</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <a href="{% url 'store:home' %}" class="btn btn-ghost text-xl font-bold text-white tracking-wide">
+                🐾 KIBO
+            </a>
+        </div>
+
+        <div class="navbar-end hidden lg:flex gap-1">
+            <a href="{% url 'store:home' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">Inicio</a>
             {% if user.is_authenticated %}
-                <a href="{% url 'accounts:profile' %}">Mi perfil</a>
-                <a href="{% url 'admin_panel:dashboard' %}">Panel</a>
-                <a href="{% url 'accounts:logout' %}">Cerrar sesión ({{ user.username }})</a>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">
+                    {{ user.username }}
+                </a>
+                {% if user.profile.is_admin %}
+                <a href="{% url 'admin_panel:dashboard' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">
+                    Panel
+                </a>
+                {% endif %}
+                <a href="{% url 'accounts:logout' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">
+                    Salir
+                </a>
             {% else %}
-                <a href="{% url 'accounts:login' %}">Iniciar sesión</a>
-                <a href="{% url 'accounts:register' %}">Registrarse</a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">
+                    Iniciar sesión
+                </a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-sm btn-warning font-semibold ml-1">
+                    Registrarse
+                </a>
             {% endif %}
         </div>
-    </nav>
-    <main>
+    </div>
+
+    <!-- Django Messages -->
+    {% if messages %}
+    <div class="container mx-auto px-4 mt-4 max-w-5xl">
+        {% for message in messages %}
+        <div role="alert" class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %} mb-2">
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 max-w-5xl flex-1">
         {% block content %}{% endblock %}
     </main>
-    <footer>Kibo Pet Shop &copy; 2026 — Arquitectura de Software SI3001</footer>
+
+    <footer class="footer footer-center p-4 mt-8" style="background:#3b3028; color:rgba(255,255,255,0.5);">
+        <p class="text-sm">Kibo Pet Shop © 2026 — Arquitectura de Software SI3001</p>
+    </footer>
+
 </body>
 </html>

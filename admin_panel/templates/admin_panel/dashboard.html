@@ -1,37 +1,70 @@
 {% extends 'base_admin.html' %}
-
 {% block title %}Dashboard — Kibo Admin{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="grid" style="margin-bottom:16px;">
-    <div class="card"><strong>Total productos</strong><p style="font-size:26px;">{{ total_products }}</p></div>
-    <div class="card"><strong>Productos activos</strong><p style="font-size:26px;">{{ active_products }}</p></div>
-    <div class="card"><strong>Total órdenes</strong><p style="font-size:26px;">{{ total_orders }}</p></div>
-    <div class="card"><strong>Órdenes pendientes</strong><p style="font-size:26px;">{{ pending_orders }}</p></div>
-    <div class="card"><strong>Ventas acumuladas</strong><p style="font-size:26px;">${{ total_sales }}</p></div>
+
+<!-- Stats -->
+<div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-6 bg-base-100">
+    <div class="stat">
+        <div class="stat-title">Total productos</div>
+        <div class="stat-value text-3xl">{{ total_products }}</div>
+    </div>
+    <div class="stat">
+        <div class="stat-title">Productos activos</div>
+        <div class="stat-value text-3xl text-success">{{ active_products }}</div>
+    </div>
+    <div class="stat">
+        <div class="stat-title">Total órdenes</div>
+        <div class="stat-value text-3xl">{{ total_orders }}</div>
+    </div>
+    <div class="stat">
+        <div class="stat-title">Órdenes pendientes</div>
+        <div class="stat-value text-3xl text-warning">{{ pending_orders }}</div>
+    </div>
+    <div class="stat">
+        <div class="stat-title">Ventas acumuladas</div>
+        <div class="stat-value text-3xl text-success">${{ total_sales|default:"0" }}</div>
+    </div>
 </div>
 
-<div class="grid">
-    <div class="card">
-        <h3 style="margin-bottom:8px;">Top productos vendidos</h3>
-        <ul>
-            {% for p in top_products %}
-                <li>{{ p.name }} — {{ p.sold_qty|default:0 }}</li>
-            {% empty %}
-                <li>Sin datos aún.</li>
-            {% endfor %}
-        </ul>
+<!-- Top Lists -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h3 class="text-xs font-semibold uppercase tracking-widest text-base-content/40 mb-3">
+                🏆 Top productos vendidos
+            </h3>
+            <ul class="space-y-2">
+                {% for p in top_products %}
+                <li class="flex justify-between items-center text-sm">
+                    <span class="truncate max-w-[70%]">{{ p.name }}</span>
+                    <span class="badge badge-ghost">{{ p.sold_qty|default:0 }} uds.</span>
+                </li>
+                {% empty %}
+                <li class="text-sm text-base-content/40">Sin datos aún.</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
-    <div class="card">
-        <h3 style="margin-bottom:8px;">Top productos comentados</h3>
-        <ul>
-            {% for p in top_commented %}
-                <li>{{ p.name }} — {{ p.review_count|default:0 }} reseñas</li>
-            {% empty %}
-                <li>Sin datos aún.</li>
-            {% endfor %}
-        </ul>
+
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h3 class="text-xs font-semibold uppercase tracking-widest text-base-content/40 mb-3">
+                ⭐ Top productos comentados
+            </h3>
+            <ul class="space-y-2">
+                {% for p in top_commented %}
+                <li class="flex justify-between items-center text-sm">
+                    <span class="truncate max-w-[70%]">{{ p.name }}</span>
+                    <span class="badge badge-ghost">{{ p.review_count|default:0 }} reseñas</span>
+                </li>
+                {% empty %}
+                <li class="text-sm text-base-content/40">Sin datos aún.</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 </div>
+
 {% endblock %}

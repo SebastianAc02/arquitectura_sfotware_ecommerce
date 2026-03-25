@@ -1,36 +1,79 @@
 {% extends 'base_public.html' %}
-
 {% block title %}Mi perfil — Kibo{% endblock %}
 
 {% block content %}
-<div style="max-width:760px;margin:0 auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.08);">
-    <h1 style="font-size:24px;margin-bottom:8px;">Mi perfil</h1>
-    <p style="color:#666;margin-bottom:18px;">Actualiza tus datos de cuenta y contacto.</p>
+<div class="flex justify-center">
+    <div class="card bg-base-100 shadow-md w-full max-w-2xl">
+        <div class="card-body p-8">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="card-title text-2xl font-bold" style="color:#3b3028;">Mi perfil</h2>
+                    <p class="text-base-content/50 text-sm mt-1">Actualiza tus datos de cuenta y contacto.</p>
+                </div>
+                {% if profile.is_admin %}
+                <span class="badge badge-lg" style="background:#3b3028; color:white;">Administrador</span>
+                {% else %}
+                <span class="badge badge-lg badge-warning">Cliente</span>
+                {% endif %}
+            </div>
 
-    <div style="margin-bottom:14px;font-size:14px;color:#444;">
-        <strong>Rol:</strong>
-        {% if profile.is_admin %}
-            Administrador
-        {% else %}
-            Cliente
-        {% endif %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <p class="text-xs font-semibold uppercase tracking-widest text-base-content/40 mb-4">Datos de cuenta</p>
+                {% for field in user_form %}
+                <fieldset class="fieldset mb-4">
+                    <legend class="fieldset-legend text-sm font-semibold">{{ field.label }}</legend>
+                    <input
+                        type="{{ field.field.widget.input_type }}"
+                        name="{{ field.html_name }}"
+                        id="{{ field.id_for_label }}"
+                        class="input input-bordered w-full {% if field.errors %}input-error{% endif %}"
+                        {% if field.value %}value="{{ field.value }}"{% endif %}
+                    >
+                    {% for error in field.errors %}
+                    <p class="text-error text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+                </fieldset>
+                {% endfor %}
+
+                <div class="divider my-6"></div>
+
+                <p class="text-xs font-semibold uppercase tracking-widest text-base-content/40 mb-4">Datos de perfil</p>
+                {% for field in profile_form %}
+                <fieldset class="fieldset mb-4">
+                    <legend class="fieldset-legend text-sm font-semibold">{{ field.label }}</legend>
+                    {% if field.field.widget.input_type == 'textarea' %}
+                    <textarea
+                        name="{{ field.html_name }}"
+                        id="{{ field.id_for_label }}"
+                        class="textarea textarea-bordered w-full {% if field.errors %}textarea-error{% endif %}"
+                        rows="3">{{ field.value|default:'' }}</textarea>
+                    {% else %}
+                    <input
+                        type="{{ field.field.widget.input_type }}"
+                        name="{{ field.html_name }}"
+                        id="{{ field.id_for_label }}"
+                        class="input input-bordered w-full {% if field.errors %}input-error{% endif %}"
+                        {% if field.value %}value="{{ field.value }}"{% endif %}
+                    >
+                    {% endif %}
+                    {% for error in field.errors %}
+                    <p class="text-error text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+                </fieldset>
+                {% endfor %}
+
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="btn font-semibold px-6" style="background:#3b3028; color:white;">
+                        Guardar cambios
+                    </button>
+                    {% if profile.is_admin %}
+                    <a href="{% url 'admin_panel:dashboard' %}" class="btn btn-ghost">Ir al panel</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
     </div>
-
-    <form method="post">
-        {% csrf_token %}
-        <h3 style="margin:8px 0;">Datos de cuenta</h3>
-        {{ user_form.as_p }}
-
-        <h3 style="margin:14px 0 8px;">Datos de perfil</h3>
-        {{ profile_form.as_p }}
-
-        <button type="submit" style="background:#3b3028;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;">Guardar cambios</button>
-    </form>
-
-    {% if profile.is_admin %}
-    <p style="margin-top:16px;">
-        <a href="{% url 'admin_panel:dashboard' %}">Ir al panel administrativo</a>
-    </p>
-    {% endif %}
 </div>
 {% endblock %}
