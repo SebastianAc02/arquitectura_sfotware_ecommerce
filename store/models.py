@@ -1,7 +1,11 @@
 # Author: Equipo Kibo
 # Dominio: CATALOGO, CARRITO, CHECKOUT — Tienda publica
 
+from decimal import Decimal, InvalidOperation
+
 from django.db import models
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.contrib.auth.models import User
 
 
@@ -23,12 +27,68 @@ class Category(models.Model):
         return self.name
 
 
+class ProductQuerySet(models.QuerySet):
+    def activos(self):
+        return self.filter(is_active=True)
+
+    def top_vendidos(self):
+        return self.annotate(
+            sold_qty=Coalesce(Sum('orderitem__quantity'), 0)
+        ).order_by('-sold_qty', '-created_at')
+
+    def filter_by(self, params):
+        qs = self
+
+        category_slug = (params.get('categoria') or '').strip()
+        tipo = (params.get('tipo') or '').strip().lower()
+        precio_min_raw = (params.get('precio_min') or '').strip()
+        precio_max_raw = (params.get('precio_max') or '').strip()
+
+        if category_slug:
+            qs = qs.filter(category__slug=category_slug)
+
+        if tipo:
+            qs = qs.filter(tipo_mascota__iexact=tipo)
+
+        if precio_min_raw:
+            try:
+                precio_min = Decimal(precio_min_raw)
+                qs = qs.filter(price__gte=precio_min)
+            except InvalidOperation:
+                pass
+
+        if precio_max_raw:
+            try:
+                precio_max = Decimal(precio_max_raw)
+                qs = qs.filter(price__lte=precio_max)
+            except InvalidOperation:
+                pass
+
+        return qs
+
+
+class ProductManager(models.Manager):
+    def get_queryset(self):
+        return ProductQuerySet(self.model, using=self._db)
+
+    def activos(self):
+        return self.get_queryset().activos()
+
+    def top_vendidos(self):
+        return self.get_queryset().top_vendidos()
+
+    def filter_by(self, params):
+        return self.get_queryset().filter_by(params)
+
+
 class Product(models.Model):
     """
     Producto del catalogo.
     Patron Fat Model: la logica del negocio (disponibilidad, reduccion de stock)
     vive aqui — no en las views.
     """
+    objects = ProductManager()
+
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)

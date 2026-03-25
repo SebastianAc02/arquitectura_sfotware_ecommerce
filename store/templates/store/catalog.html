@@ -1,0 +1,124 @@
+{% extends 'base_public.html' %}
+{% block title %}Catálogo — Kibo{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold" style="color:#3b3028;">Catálogo de productos</h1>
+    <p class="text-base-content/60 mt-1">Explora productos y aplica filtros por categoría, precio y tipo de mascota.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <aside class="lg:col-span-1">
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-lg">Filtros</h2>
+
+                <form method="get" class="space-y-3">
+                    <div>
+                        <label class="label"><span class="label-text">Categoría</span></label>
+                        <select class="select select-bordered w-full" name="categoria">
+                            <option value="">Todas</option>
+                            {% for c in categories %}
+                            <option value="{{ c.slug }}" {% if selected_categoria == c.slug %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="label"><span class="label-text">Tipo de mascota</span></label>
+                        <select class="select select-bordered w-full" name="tipo">
+                            <option value="">Todos</option>
+                            <option value="perro" {% if selected_tipo == 'perro' %}selected{% endif %}>Perro</option>
+                            <option value="gato" {% if selected_tipo == 'gato' %}selected{% endif %}>Gato</option>
+                            <option value="ave" {% if selected_tipo == 'ave' %}selected{% endif %}>Ave</option>
+                            <option value="todos" {% if selected_tipo == 'todos' %}selected{% endif %}>Multi-especie</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="label"><span class="label-text">Precio min</span></label>
+                            <input type="number" step="0.01" class="input input-bordered w-full" name="precio_min" value="{{ selected_precio_min }}">
+                        </div>
+                        <div>
+                            <label class="label"><span class="label-text">Precio max</span></label>
+                            <input type="number" step="0.01" class="input input-bordered w-full" name="precio_max" value="{{ selected_precio_max }}">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button class="btn btn-warning flex-1" type="submit">Aplicar</button>
+                        <a href="{% url 'store:catalog' %}" class="btn btn-outline">Limpiar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <section class="lg:col-span-3">
+        {% if products %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {% for product in products %}
+            <div class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+                {% if product.image %}
+                <figure class="h-44 overflow-hidden">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                </figure>
+                {% else %}
+                <figure class="h-44 bg-base-200 flex items-center justify-center">
+                    <span class="text-sm text-base-content/60">Sin imagen</span>
+                </figure>
+                {% endif %}
+
+                <div class="card-body p-4">
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            <h2 class="card-title text-base leading-tight">{{ product.name }}</h2>
+                            <p class="text-xs text-base-content/50">{{ product.category.name }}</p>
+                        </div>
+
+                        <form method="post" action="{% url 'store:wishlist_toggle' product.slug %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="btn btn-ghost btn-xs" title="Wishlist">
+                                {% if user.is_authenticated and product.id in wishlist_ids %}
+                                    <span class="text-xs text-success">En wishlist</span>
+                                {% else %}
+                                    <span class="text-xs text-base-content/60">Wishlist</span>
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
+
+                    <p class="text-sm text-base-content/70 line-clamp-2">{{ product.description|default:'Producto para tu mascota.' }}</p>
+
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold text-lg" style="color:#3b3028;">${{ product.price }}</span>
+                        <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-xs btn-warning">Ver detalle</a>
+                    </div>
+
+                    <div class="mt-2 flex gap-2 flex-wrap">
+                        {% if product.id in top_ids %}
+                            <span class="badge badge-warning">Top vendido</span>
+                        {% endif %}
+                        {% if product.stock > 0 %}
+                            <span class="badge badge-outline">Stock: {{ product.stock }}</span>
+                        {% else %}
+                            <span class="badge badge-error">Sin stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body text-center py-16">
+                <p class="text-lg font-medium">No se encontraron productos con esos filtros.</p>
+                <a href="{% url 'store:catalog' %}" class="btn btn-outline mt-3">Limpiar filtros</a>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
