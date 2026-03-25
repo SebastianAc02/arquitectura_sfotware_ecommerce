@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="autumn">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Kibo Admin{% endblock %}</title>
@@ -25,7 +26,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </label>
-            <span class="font-bold text-lg">Kibo Admin</span>
+            <span class="font-bold text-lg inline-flex items-center gap-2">
+                <img src="{% static 'img/kibo-logo.jpeg' %}" alt="Logo Kibo" class="w-7 h-7 rounded object-cover">
+                <span>Kibo Admin</span>
+            </span>
         </div>
 
         <!-- Page header -->
@@ -55,8 +59,9 @@
 
             <!-- Brand -->
             <div class="p-5 border-b border-white/10">
-                <a href="{% url 'admin_panel:dashboard' %}" class="text-white font-bold text-lg tracking-wide">
-                    Kibo Admin
+                <a href="{% url 'admin_panel:dashboard' %}" class="text-white font-bold text-lg tracking-wide inline-flex items-center gap-2">
+                    <img src="{% static 'img/kibo-logo.jpeg' %}" alt="Logo Kibo" class="w-8 h-8 rounded object-cover">
+                    <span>Kibo Admin</span>
                 </a>
             </div>
 
