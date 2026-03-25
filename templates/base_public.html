@@ -27,6 +27,8 @@
                     <li><a href="{% url 'store:home' %}">Inicio</a></li>
                     <li><a href="{% url 'store:catalog' %}">Catálogo</a></li>
                     {% if user.is_authenticated %}
+                        <li><a href="{% url 'store:cart' %}">Carrito {% if cart_count %}<span class="badge badge-sm badge-warning">{{ cart_count }}</span>{% endif %}</a></li>
+                        <li><a href="{% url 'store:my_orders' %}">Mis órdenes</a></li>
                         <li><a href="{% url 'accounts:profile' %}">Mi perfil</a></li>
                         {% if user.profile and user.profile.is_admin %}
                         <li><a href="{% url 'admin_panel:dashboard' %}">Panel admin</a></li>
@@ -47,6 +49,14 @@
             <a href="{% url 'store:home' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">Inicio</a>
             <a href="{% url 'store:catalog' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">Catálogo</a>
             {% if user.is_authenticated %}
+                <!-- Carrito con badge -->
+                <a href="{% url 'store:cart' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white relative">
+                    🛒
+                    {% if cart_count %}
+                    <span class="badge badge-xs badge-warning absolute -top-1 -right-1">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'store:my_orders' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">Mis órdenes</a>
                 <a href="{% url 'accounts:profile' %}" class="btn btn-ghost btn-sm text-white/80 hover:text-white">
                     {{ user.username }}
                 </a>

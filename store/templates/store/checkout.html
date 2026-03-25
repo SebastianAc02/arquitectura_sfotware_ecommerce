@@ -1,0 +1,77 @@
+{% extends 'base_public.html' %}
+{% block title %}Checkout — Kibo{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold" style="color:#3b3028;">Checkout</h1>
+    <p class="text-base-content/50 text-sm mt-1">Revisa tu pedido y confirma la compra.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Formulario -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-6">
+            <h2 class="card-title mb-4">Datos de envío</h2>
+            <form method="post">
+                {% csrf_token %}
+
+                <fieldset class="fieldset mb-5">
+                    <legend class="fieldset-legend font-semibold">Dirección de envío</legend>
+                    <textarea name="shipping_address" rows="3" required
+                              class="textarea textarea-bordered w-full"
+                              placeholder="Calle, número, ciudad, departamento..."></textarea>
+                </fieldset>
+
+                <fieldset class="fieldset mb-6">
+                    <legend class="fieldset-legend font-semibold">Método de pago</legend>
+                    <select name="payment_method" class="select select-bordered w-full" required>
+                        {% for value, label in payment_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-base-content/40 mt-1">
+                        * Entorno de demostración — no se procesará ningún cobro real.
+                    </p>
+                </fieldset>
+
+                <button type="submit" class="btn w-full font-semibold text-base"
+                        style="background:#3b3028; color:white;">
+                    Confirmar orden · ${{ cart.get_total }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resumen del pedido -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body p-6">
+            <h2 class="card-title mb-4">Tu pedido ({{ items|length }} producto{{ items|length|pluralize }})</h2>
+            <div class="space-y-3">
+                {% for item in items %}
+                <div class="flex items-center gap-3">
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
+                         class="w-12 h-12 object-cover rounded-lg flex-shrink-0">
+                    {% else %}
+                    <div class="w-12 h-12 bg-base-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span>🐾</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-sm line-clamp-1">{{ item.product.name }}</p>
+                        <p class="text-xs text-base-content/50">×{{ item.quantity }}</p>
+                    </div>
+                    <p class="font-semibold text-sm">${{ item.get_subtotal }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="divider"></div>
+            <div class="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span style="color:#3b3028;">${{ cart.get_total }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

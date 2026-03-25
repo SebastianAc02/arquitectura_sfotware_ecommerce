@@ -1,10 +1,17 @@
 # Author: Equipo Kibo
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .models import Category, Product, Review, Wishlist
+from .models import Cart, CartItem, Category, Order, OrderItem, Product, Review, Wishlist
+
+PAYMENT_CHOICES = [
+    ('tarjeta',      'Tarjeta de crédito/débito (simulado)'),
+    ('efectivo',     'Efectivo contra entrega'),
+    ('transferencia','Transferencia bancaria'),
+]
 
 
 def home(request):
@@ -111,3 +118,183 @@ def wishlist_toggle(request, slug):
         next_url = reverse('store:product_detail', kwargs={'slug': product.slug})
 
     return redirect(next_url)
+
+
+# ─────────────────────────────────────────────
+# CARRITO
+# ─────────────────────────────────────────────
+
+@login_required
+def cart_view(request):
+    """Muestra el carrito del usuario con items y total."""
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    items = cart.items.select_related('product__category').all()
+    return render(request, 'store/cart.html', {
+        'cart': cart,
+        'items': items,
+    })
+
+
+@login_required
+def cart_add(request, slug):
+    """
+    POST: agrega un producto al carrito o incrementa su cantidad.
+    PRG: redirige de vuelta al detalle del producto.
+    """
+    if request.method != 'POST':
+        return redirect('store:catalog')
+
+    product = get_object_or_404(Product, slug=slug, is_active=True)
+
+    if not product.is_available():
+        messages.warning(request, f'"{product.name}" no tiene stock disponible.')
+        return redirect('store:product_detail', slug=slug)
+
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    if not created:
+        item.quantity += 1
+        item.save()
+
+    messages.success(request, f'"{product.name}" agregado al carrito.')
+    return redirect('store:product_detail', slug=slug)
+
+
+@login_required
+def cart_remove(request, item_id):
+    """POST: elimina un CartItem del carrito."""
+    if request.method != 'POST':
+        return redirect('store:cart')
+    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    item.delete()
+    messages.info(request, 'Producto eliminado del carrito.')
+    return redirect('store:cart')
+
+
+@login_required
+def cart_update(request, item_id):
+    """POST: actualiza la cantidad de un CartItem."""
+    if request.method != 'POST':
+        return redirect('store:cart')
+    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    try:
+        qty = int(request.POST.get('quantity', 1))
+    except ValueError:
+        qty = 1
+    if qty < 1:
+        item.delete()
+        messages.info(request, 'Producto eliminado del carrito.')
+    else:
+        item.quantity = qty
+        item.save()
+    return redirect('store:cart')
+
+
+# ─────────────────────────────────────────────
+# CHECKOUT
+# ─────────────────────────────────────────────
+
+@login_required
+def checkout_view(request):
+    """
+    GET:  muestra formulario de dirección y método de pago.
+    POST: procesa la orden dentro de transaction.atomic().
+          - Valida stock de cada item.
+          - Crea Order + OrderItems (Snapshot Pattern en unit_price).
+          - Reduce stock de cada Product.
+          - Vacía el carrito.
+    """
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    items = cart.items.select_related('product').all()
+
+    if not items.exists():
+        messages.warning(request, 'Tu carrito está vacío.')
+        return redirect('store:cart')
+
+    if request.method == 'POST':
+        shipping_address = request.POST.get('shipping_address', '').strip()
+        payment_method = request.POST.get('payment_method', '')
+
+        if not shipping_address:
+            messages.error(request, 'La dirección de envío es obligatoria.')
+            return render(request, 'store/checkout.html', {
+                'cart': cart, 'items': items,
+                'payment_choices': PAYMENT_CHOICES,
+            })
+
+        if payment_method not in dict(PAYMENT_CHOICES):
+            messages.error(request, 'Método de pago no válido.')
+            return render(request, 'store/checkout.html', {
+                'cart': cart, 'items': items,
+                'payment_choices': PAYMENT_CHOICES,
+            })
+
+        try:
+            with transaction.atomic():
+                # Validar stock de todos los items antes de tocar nada
+                for item in items:
+                    if item.product.stock < item.quantity:
+                        raise ValueError(
+                            f'Stock insuficiente para "{item.product.name}". '
+                            f'Disponible: {item.product.stock}, solicitado: {item.quantity}.'
+                        )
+
+                # Crear la orden
+                order = Order.objects.create(
+                    user=request.user,
+                    total=cart.get_total(),
+                    shipping_address=shipping_address,
+                    payment_method=payment_method,
+                    status='pending',
+                )
+
+                # Crear OrderItems con Snapshot Pattern (unit_price = precio actual)
+                for item in items:
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item.product,
+                        quantity=item.quantity,
+                        unit_price=item.product.price,  # Snapshot
+                    )
+                    item.product.reduce_stock(item.quantity)
+
+                cart.clear()
+
+        except ValueError as e:
+            messages.error(request, str(e))
+            return render(request, 'store/checkout.html', {
+                'cart': cart, 'items': items,
+                'payment_choices': PAYMENT_CHOICES,
+            })
+
+        messages.success(request, '¡Orden creada exitosamente!')
+        return redirect('store:order_confirmation', order_id=order.id)
+
+    return render(request, 'store/checkout.html', {
+        'cart': cart,
+        'items': items,
+        'payment_choices': PAYMENT_CHOICES,
+    })
+
+
+@login_required
+def order_confirmation(request, order_id):
+    """Página de confirmación post-checkout."""
+    order = get_object_or_404(
+        Order.objects.prefetch_related('items__product'),
+        id=order_id,
+        user=request.user,
+    )
+    return render(request, 'store/order_confirmation.html', {'order': order})
+
+
+@login_required
+def my_orders(request):
+    """Historial de órdenes del usuario autenticado."""
+    orders = (
+        Order.objects
+        .filter(user=request.user)
+        .prefetch_related('items__product')
+        .order_by('-created_at')
+    )
+    return render(request, 'store/my_orders.html', {'orders': orders})
