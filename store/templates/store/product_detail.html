@@ -44,7 +44,17 @@
             </div>
 
             <div class="mt-4 flex gap-2">
-                <button class="btn btn-warning" type="button" disabled>Agregar al carrito (siguiente feature)</button>
+                <form method="post" action="{% url 'store:cart_add' product.slug %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    {% if product.is_available %}
+                    <button type="submit" class="btn btn-warning font-semibold px-6">
+                        🛒 Agregar al carrito
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-disabled" disabled>Sin stock</button>
+                    {% endif %}
+                </form>
 
                 <form method="post" action="{% url 'store:wishlist_toggle' product.slug %}">
                     {% csrf_token %}
