@@ -96,9 +96,10 @@ docker compose exec -T web python manage.py seed_demo_data
 
 Después de ejecutar `seed_demo_data`:
 
-- Admin de dominio:
+- Admin de dominio y Django Admin:
   - usuario: `kibo_admin`
   - contraseña: `kibo12345`
+  - permisos: `is_staff=True`, `is_superuser=True`
 - Clientes demo:
   - usuarios: `cliente1` a `cliente5`
   - contraseña: `kibo12345`
@@ -208,6 +209,20 @@ Cerrar PostgreSQL local o cambiar puerto host del servicio `db`.
   docker compose logs -f db
   docker compose logs -f web
   ```
+
+### Django Admin: "autenticado pero no autorizado"
+
+Si aparece el mensaje de que estás autenticado como otro usuario (por ejemplo, un cliente) pero no autorizado:
+
+1. Cierra sesión en `/accounts/logout/`.
+2. Abre una ventana incógnito y entra a `/django-admin/`.
+3. Re-ejecuta seed para reforzar permisos del admin demo:
+   ```bash
+   docker compose exec -T web python manage.py seed_demo_data
+   ```
+4. Ingresa con:
+   - usuario: `kibo_admin`
+   - contraseña: `kibo12345`
 
 ### Error de dependencias tipo `psycopg2`
 

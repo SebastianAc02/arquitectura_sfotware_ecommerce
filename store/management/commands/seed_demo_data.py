@@ -100,11 +100,23 @@ class Command(BaseCommand):
         # 1) Usuarios demo
         admin_user, _ = User.objects.get_or_create(
             username='kibo_admin',
-            defaults={'email': 'admin@kibo.local', 'is_staff': True},
+            defaults={
+                'email': 'admin@kibo.local',
+                'is_staff': True,
+                'is_superuser': True,
+                'is_active': True,
+            },
         )
+
+        # En cada ejecución reforzamos permisos para evitar cuentas inconsistentes.
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.is_active = True
+
         if not admin_user.check_password('kibo12345'):
             admin_user.set_password('kibo12345')
-            admin_user.save()
+
+        admin_user.save()
 
         admin_profile, _ = UserProfile.objects.get_or_create(user=admin_user)
         if not admin_profile.is_admin:
